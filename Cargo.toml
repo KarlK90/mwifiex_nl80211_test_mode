@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: 2026 The mwifiex_nl80211_test_mode authors
+# SPDX-License-Identifier: GPL-2.0-only
+
+[package]
+name = "mwifiex_nl80211_test_mode"
+version = "0.1.0"
+edition = "2024"
+license = "GPL-2.0-only"
+description = "MWIFIEX rf test tool using NL80211 test mode"
+
+[lib]
+name = "mwifiex_nl80211_test_mode"
+path = "src/lib.rs"
+
+[[bin]]
+name = "mwifiex_nl_test_mode"
+path = "src/main.rs"
+
+[dependencies]
+
+[profile.release]
+strip = true
+opt-level = 'z'
+lto = "fat"
+codegen-units = 1
