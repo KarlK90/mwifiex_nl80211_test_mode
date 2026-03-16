@@ -20,6 +20,7 @@ path = "src/main.rs"
 bitfield-struct = "0.12"
 clap = { version = "4.6", features = ["derive"] }
 colored = "3.1.1"
+inquire = "0.9.4"
 neli = "0.7"
 nix = { version = "0.31", features = ["net"] }
 serde = { version = "1.0", features = ["derive"] }
