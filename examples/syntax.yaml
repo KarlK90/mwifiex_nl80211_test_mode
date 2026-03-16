@@ -1,0 +1,181 @@
+# SPDX-FileCopyrightText: 2026 The mwifiex_nl80211_test_mode authors
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Complete YAML syntax of all MWIFIEX NL80211 commands.
+#
+# Variables can be overridden from the command line:
+#   mwifiex_nl_test_mode -f examples/syntax.yaml --set channel=6 --set bandwidth=bw40
+
+variables: # optional - default variable values
+  channel: 1
+  band: ghz2_4
+  bandwidth: bw20
+  modulation: cck
+  tx_rate: 1
+  radio0: 11
+  radio1: 0
+  power_dbm: -1
+  tx_path: a
+
+steps: # required - ordered list of commands
+  #### Control Steps ####
+
+  # Pause execution and wait for the user to press Enter:
+  - wait_for_confirmation:
+      message: "TX started. Press Enter to stop." # optional
+
+  # Pause execution for a fixed duration:
+  - delay:
+      duration: 1000 # milliseconds
+
+  #### RF Configuration Commands ####
+
+  # Enable or disable RF test mode (must be first/last):
+  - rf_test_mode:
+      enable: true # true | false
+
+  # Select the active radio(s):
+  - radio_mode:
+      radio0: 3 # radio 0 index
+      radio1: 0 # radio 1 index
+
+  # Set the RF band:
+  - rf_band:
+      band: ghz2_4 # ghz2_4 | ghz5
+
+  # Set the channel bandwidth:
+  - channel_bandwidth:
+      bandwidth: bw20 # bw20 | bw40 | bw80
+
+  # Set the RF channel number:
+  - rf_channel:
+      channel: 36
+
+  # Set the TX antenna path:
+  - tx_antenna:
+      mode: a # a | b | a_b
+
+  # Set the RX antenna path:
+  - rx_antenna:
+      mode: a_b # a | b | a_b
+
+  #### Power and Modulation ####
+
+  # Configure transmit power, modulation, and signal path:
+  - tx_power:
+      power_dbm: 10 # target power in dBm (-1 = firmware default)
+      modulation: mcs # cck | ofdm | mcs |
+      path: a # a   | b    | a_b |
+
+  #### Transmit Commands ####
+
+  # Continuous wave or continuous packet transmission:
+  - tx_continuous:
+      enable: true
+      continuous_wave_mode: false # true = CW tone, false = modulated packets
+      payload_pattern: 0xAAA # 32-bit payload pattern (default: 0)
+      cs_mode: false # carrier suppression mode (default: false)
+      active_subchannel: both # lower | upper | both (default: lower)
+      tx_rate: 1 # TX rate index (default: 0)
+
+  - tx_continuous:
+      enable: false
+
+  # Frame-based transmission with detailed control:
+  - tx_frame:
+      enable: true
+      tx_rate: 0x210b # rate index, e.g. 0x2100 = HE SS1 MCS0
+      payload_pattern: 0xAAA # (default: 0)
+      payload_length: 0x100 # 1..0x400 bytes (default: 0)
+      adjust_burst_sifs_gap: true # (default: false)
+      adjust_sifs_us: 20 # SIFS gap 10..255 µs (default: 0)
+      short_preamble: false # (default: false)
+      active_subchannel: lower # lower | upper | both (default: lower)
+      short_gi: false # short guard interval (default: false)
+      adv_coding: false # LDPC coding (default: false)
+      beamforming: false # (default: false)
+      greenfield_mode: false # (default: false)
+      stbc: false # (default: false)
+      signal_bw: bw20 # bw20 | bw40 | bw80 | default (default: default)
+      num_pkt: -1 # number of packets, -1 = unlimited (default: -1)
+      max_pkt_ext: -1 # (default: -1)
+      beam_change: -1 # (default: -1)
+      dcm: -1 # (default: -1)
+      doppler: -1 # (default: -1)
+      midamble_period: -1 # (default: -1)
+      q_num: -1 # (default: -1)
+      bssid: [0x05, 0x43, 0x3f, 0xc4, 0x51, 0x00] # 6-byte MAC address
+
+  - tx_frame:
+      enable: false
+
+  #### Measurement ####
+
+  # read and reset the packet error rate counters:
+  # Returns `rx_total_paket_count`, `rx_multi_broadcast_packet_count`, and
+  # `rx_frame_check_sequence_errors`.
+  - get_and_reset_per: {}
+
+  #### UL-OFDMA Commands (802.11ax)
+
+  # Configure HE trigger frame parameters:
+  - trigger_frame:
+      enable: true
+      standalone_hetb: standalone # disabled | trigger_based | standalone | su_ofdma
+      frame_ctrl_type: 1
+      frame_ctrl_subtype: 2
+      frame_duration: 5484
+      trigger_type: 0
+      ul_len: 1000
+      more_tf: false
+      cs_required: false
+      ul_bw: bw80 # bw20 | bw40 | bw80
+      ltf_type: 1
+      ltf_mode: false
+      ltf_symbol: 1xheltf # 1xheltf | 2xheltf
+      ul_stbc: false
+      ldpc_ess: true
+      ap_tx_pwr: 0
+      pre_fec_pad_fct: 1
+      pe_disambig: false
+      spatial_reuse: 65535
+      doppler: false
+      he_sig2: 511
+      aid12: 5
+      ru_alloc_reg: false
+      ru_alloc: 67 # RU index
+      ul_coding_type: true
+      ul_mcs: 0 # UL MCS index 0..11
+      ul_dcm: false
+      ss_alloc: 1ss # 1ss | 2ss
+      ul_target_rssi: 90
+      mpdu_mu_sf: 0
+      tid_al: 0
+      ac_pl: false
+      pref_ac: 0
+
+  - trigger_frame:
+      enable: false
+
+  # HE trigger-based TX (DUT response to trigger frames):
+  - he_tb_tx:
+      enable: true
+      qnum: 1 # queue number (default: 0)
+      aid: 0 # association ID (default: 0)
+      axq0_mu_timer: 0 # MU timer in 8 ms units (default: 0)
+      tx_pwr: 9 # TX power in dBm (default: 0)
+
+  - he_tb_tx:
+      enable: false
+
+  #### OTP Commands
+
+  # Read or write calibration data from/to OTP memory:
+  - otp_cal_data:
+      write: false # false = read, true = write
+      cal_data: [0x01, 0x02, 0x03] # up to 1400 bytes (for write)
+
+  # Read or write the MAC address in OTP memory:
+  - otp_mac_addr:
+      write: false # false = read, true = write
+      mac_addr: [0x00, 0x11, 0x22, 0x33, 0x44, 0x55]

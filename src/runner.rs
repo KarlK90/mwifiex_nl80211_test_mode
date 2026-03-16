@@ -137,6 +137,8 @@ fn parse_sequence_file(
 
 #[cfg(test)]
 mod tests {
+    use std::path::{Path, PathBuf};
+
     use crate::command::{
         ActiveSubchannel, AntennaMode, ChannelBandwidth, Modulation, RfBand, TxPathId,
     };
@@ -457,5 +459,29 @@ mod tests {
                 }),
             ]
         )
+    }
+
+    #[test]
+    fn parse_and_validate_examples() {
+        fn process_yaml_files<T: FnMut(&PathBuf)>(dir: &std::path::Path, validate_fn: &mut T) {
+            for entry in std::fs::read_dir(dir)
+                .unwrap_or_else(|e| panic!("failed to read {dir:?}: {e}"))
+                .filter_map(|e| e.ok())
+            {
+                let path = entry.path();
+                if path.is_dir() {
+                    process_yaml_files(&path, validate_fn);
+                } else if path.extension().and_then(|s| s.to_str()) == Some("yaml") {
+                    validate_fn(&path);
+                }
+            }
+        }
+
+        process_yaml_files(Path::new("examples"), &mut |path| {
+            let contents =
+                read_to_string(path).unwrap_or_else(|e| panic!("failed to read {path:?}: {e}"));
+            let _ = parse_sequence_file(&contents, &[])
+                .unwrap_or_else(|e| panic!("failed to deserialize {path:?}: {e}"));
+        });
     }
 }
