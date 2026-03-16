@@ -17,6 +17,9 @@ name = "mwifiex_nl_test_mode"
 path = "src/main.rs"
 
 [dependencies]
+bitfield-struct = "0.12"
+zerocopy = "0.8"
+zerocopy-derive = "0.8"
 
 [profile.release]
 strip = true
