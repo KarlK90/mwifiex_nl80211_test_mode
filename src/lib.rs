@@ -3,5 +3,6 @@
 
 pub mod command;
 pub mod ffi;
+pub mod interactive;
 pub mod netlink;
 pub mod runner;
