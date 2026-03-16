@@ -1,0 +1,55 @@
+# SPDX-FileCopyrightText: 2026 The mwifiex_nl80211_test_mode authors
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# 88W9098: 5 GHz TX command sequence using tx_frame
+#
+# Source: AN14114 "RF test mode command sequence examples for 88W9098"
+# TX on radio 0 configured for 5 GHz RF channel 44, 20 MHz bandwidth,
+# 10 dBm target power with MCS modulation, HE SS1 MCS11 rate, and 1x1
+# mode (path A).
+
+steps:
+  # 1. Enable the RF test mode
+  - rf_test_mode:
+      enable: true
+
+  # 2. Set radio mode 0 in 5 GHz band with 1x1 mode (path A)
+  - radio_mode:
+      radio0: 3
+      radio1: 0
+
+  # 3. Set TX antenna mode (path A)
+  - tx_antenna:
+      mode: a
+
+  # 4. Set 20 MHz bandwidth
+  - channel_bandwidth:
+      bandwidth: bw20
+
+  # 5. Set RF channel 44
+  - rf_channel:
+      channel: 44
+
+  # 6. Set TX power to 10 dBm, MCS modulation and TX signal path A
+  - tx_power:
+      power_dbm: 10
+      modulation: mcs
+      path: a
+
+  # 7. Start TX at HE SS1 MCS11 rate
+  - tx_frame:
+      enable: true
+      tx_rate: 0x210b  # HE SS1 MCS11
+      payload_pattern: 0xAAA
+      payload_length: 0x100
+      adjust_burst_sifs_gap: true
+      adjust_sifs_us: 20
+      adv_coding: true
+      bssid: [0x05, 0x43, 0x3f, 0xc4, 0x51, 0x00]
+
+  - wait_for_confirmation:
+      message: "TX frame started. Press Enter to stop."
+
+  # 8. Stop TX
+  - tx_frame:
+      enable: false

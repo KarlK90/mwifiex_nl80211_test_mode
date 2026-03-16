@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: 2026 The mwifiex_nl80211_test_mode authors
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# UL-OFDMA: DUT HE-trigger response frame generation
+#
+# Source: AN14114 "Configure the golden unit and DUT for UL-OFDMA transmission"
+# HE-trigger response frame generation on the DUT:
+# 5 GHz, 2x2 mode, Channel 36, 20 MHz channel bandwidth,
+# TX power 9 dBm.
+#
+# The DUT responds to trigger frames sent by the golden unit. The RU index
+# and MCS data rate of the UL-OFDMA transmission are based on the received
+# trigger frame.
+
+steps:
+  # 1. Enable RF test mode
+  - rf_test_mode:
+      enable: true
+
+  # 2. Set radio mode to 5 GHz (2x2 mode)
+  - radio_mode:
+      radio0: 1
+      radio1: 0
+
+  # 3. Set the band to 5 GHz
+  - rf_band:
+      band: ghz5
+
+  # 4. Set the bandwidth to 20 MHz
+  - channel_bandwidth:
+      bandwidth: bw20
+
+  # 5. Set the channel to 36
+  - rf_channel:
+      channel: 36
+
+  # 6. Start HE TB-TX with TX power set to 9 dBm
+  - he_tb_tx:
+      enable: true
+      qnum: 1
+      aid: 5
+      axq0_mu_timer: 400
+      tx_pwr: 9
+
+  # 7. Measure the TX power value and EVM for the HE trigger response frame
+  - wait_for_confirmation:
+      message: "Measure TX power and EVM using an RF tester. Press Enter when done."

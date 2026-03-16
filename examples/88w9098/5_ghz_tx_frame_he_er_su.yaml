@@ -1,0 +1,61 @@
+# SPDX-FileCopyrightText: 2026 The mwifiex_nl80211_test_mode authors
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# 88W9098: 5 GHz TX command sequence using tx_frame for HE-ER SU
+#
+# Source: AN14114 "RF test mode command sequence examples for 88W9098"
+# TX on radio 0 configured for 5 GHz RF channel 44, 20 MHz bandwidth,
+# 10 dBm target power with MCS modulation, HE SS1 MCS1 rate, short
+# preamble, and 1x1 mode (path A) for HE-ER SU.
+#
+# Notes:
+# - 242 tones RU: MCS supported are MCS0-2. Set signalBw to 0 and MCS to 0, 1 or 2.
+# - 106 tone RU: MCS supported is MCS0. Set signalBw to 1 and MCS to 0.
+# - Set short_preamble to true for HE-ER SU in RF_TEST_MODE.
+# - For 802.11ax PPDU type: 0=HE-SU, 1=HE-EXT-SU, 2=HE-MU, 3=HE-Trigger-based.
+
+steps:
+  # 1. Enable the RF test mode
+  - rf_test_mode:
+      enable: true
+
+  # 2. Set radio mode 0 in 5 GHz band with 1x1 mode (path A)
+  - radio_mode:
+      radio0: 3
+      radio1: 0
+
+  # 3. Set TX antenna mode (path A)
+  - tx_antenna:
+      mode: a
+
+  # 4. Set 20 MHz bandwidth
+  - channel_bandwidth:
+      bandwidth: bw20
+
+  # 5. Set RF channel 44
+  - rf_channel:
+      channel: 44
+
+  # 6. Set TX power to 10 dBm, MCS modulation and TX signal path A
+  - tx_power:
+      power_dbm: 10
+      modulation: mcs
+      path: a
+
+  # 7. Start TX at HE SS1 MCS1 rate and short preamble for HE-ER SU
+  - tx_frame:
+      enable: true
+      tx_rate: 0x2101  # HE SS1 MCS1
+      payload_pattern: 0xAAA
+      payload_length: 0x100
+      adjust_burst_sifs_gap: true
+      adjust_sifs_us: 20
+      short_preamble: true
+      bssid: [0x05, 0x43, 0x3f, 0xc4, 0x51, 0x00]
+
+  - wait_for_confirmation:
+      message: "TX frame started. Press Enter to stop."
+
+  # 8. Stop TX
+  - tx_frame:
+      enable: false

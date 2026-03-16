@@ -1,0 +1,44 @@
+# SPDX-FileCopyrightText: 2026 The mwifiex_nl80211_test_mode authors
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# 88W9098: 5 GHz RX command sequence
+#
+# Source: AN14114 "RF test mode command sequence examples for 88W9098"
+# RX on radio 0 configured for 5 GHz, RF channel 36, 40 MHz bandwidth,
+# and 2x2 path A+B.
+
+steps:
+  # 1. Enable the RF test mode
+  - rf_test_mode:
+      enable: true
+
+  # 2. Set radio mode 0 in 5 GHz band with 2x2 mode (Path A+B)
+  - radio_mode:
+      radio0: 1
+      radio1: 0
+
+  # 3. Set 5 GHz band
+  - rf_band:
+      band: ghz5
+
+  # 4. Set 40 MHz bandwidth
+  - channel_bandwidth:
+      bandwidth: bw40
+
+  # 5. Set RX antenna mode (both path)
+  - rx_antenna:
+      mode: a_b
+
+  # 6. Set channel 36
+  - rf_channel:
+      channel: 36
+
+  # 7. Reset the packet error rate
+  - get_and_reset_per: {}
+
+  # 8. Inject a definite number of packets at a specific power level
+  - wait_for_confirmation:
+      message: "Send packets to the DUT, then press Enter to read results."
+
+  # 9. Get and reset the packet error rate
+  - get_and_reset_per: {}

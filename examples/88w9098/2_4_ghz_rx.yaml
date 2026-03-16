@@ -1,0 +1,44 @@
+# SPDX-FileCopyrightText: 2026 The mwifiex_nl80211_test_mode authors
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# 88W9098: 2.4 GHz RX command sequence
+#
+# Source: AN14114 "RF test mode command sequence examples for 88W9098"
+# RX on radio 1 configured for 2.4 GHz, RF channel 6, 20 MHz bandwidth,
+# and 1x1 path A.
+
+steps:
+  # 1. Enable the RF test mode
+  - rf_test_mode:
+      enable: true
+
+  # 2. Set radio mode 1 in 2.4 GHz band with 1x1 mode (Path A)
+  - radio_mode:
+      radio0: 0
+      radio1: 11
+
+  # 3. Set 2.4 GHz band
+  - rf_band:
+      band: ghz2_4
+
+  # 4. Set 20 MHz bandwidth
+  - channel_bandwidth:
+      bandwidth: bw20
+
+  # 5. Set RX antenna mode (path A)
+  - rx_antenna:
+      mode: a
+
+  # 6. Set channel 6
+  - rf_channel:
+      channel: 6
+
+  # 7. Reset the packet error rate
+  - get_and_reset_per: {}
+
+  # 8. Inject a definite number of packets at a specific power level
+  - wait_for_confirmation:
+      message: "Send packets to the DUT, then press Enter to read results."
+
+  # 9. Get and reset the packet error rate
+  - get_and_reset_per: {}

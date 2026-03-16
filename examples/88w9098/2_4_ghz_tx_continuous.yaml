@@ -1,0 +1,57 @@
+# SPDX-FileCopyrightText: 2026 The mwifiex_nl80211_test_mode authors
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# 88W9098: 2.4 GHz TX command sequence using tx_continuous
+#
+# Source: AN14114 "RF test mode command sequence examples for 88W9098"
+# TX on radio 1 configured for 2.4 GHz RF channel 6, 20 MHz bandwidth,
+# 8 dBm target power with MCS modulation, HE SS1 MCS8 rate, and 1x1
+# mode (path A).
+#
+# Note: For TX, use either continuous wave mode (continuous_wave_mode: true)
+# or packet mode (continuous_wave_mode: false). This example uses CW mode.
+
+steps:
+  # 1. Enable the RF test mode
+  - rf_test_mode:
+      enable: true
+
+  # 2. Set radio mode 1 in 2.4 GHz band with 1x1 mode (path A)
+  - radio_mode:
+      radio0: 0
+      radio1: 11
+
+  # 3. Set TX antenna mode (path A)
+  - tx_antenna:
+      mode: a
+
+  # 4. Set 20 MHz bandwidth
+  - channel_bandwidth:
+      bandwidth: bw20
+
+  # 5. Set RF channel 6
+  - rf_channel:
+      channel: 6
+
+  # 6. Set TX power to 8 dBm, MCS modulation and TX signal path A
+  - tx_power:
+      power_dbm: 8
+      modulation: mcs
+      path: a
+
+  # 7/8. Start TX continuous wave mode at HE SS1 MCS8 rate
+  # For packet mode instead, set continuous_wave_mode: false
+  - tx_continuous:
+      enable: true
+      continuous_wave_mode: true
+      payload_pattern: 0xAAA
+      cs_mode: false
+      active_subchannel: both
+      tx_rate: 0x2108  # HE SS1 MCS8
+
+  - wait_for_confirmation:
+      message: "TX continuous wave started. Press Enter to stop."
+
+  # 9. Stop TX continuous wave mode
+  - tx_continuous:
+      enable: false

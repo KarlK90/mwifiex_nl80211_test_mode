@@ -1,0 +1,67 @@
+# SPDX-FileCopyrightText: 2026 The mwifiex_nl80211_test_mode authors
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# UL-OFDMA: Golden unit HE-trigger frame generation
+#
+# Source: AN14114 "Configure the golden unit and DUT for UL-OFDMA transmission"
+# HE-trigger frame generation on the golden unit:
+# 5 GHz path A+B, Channel 36, 20 MHz channel bandwidth,
+# RU index 0, data rate MCS2.
+#
+# The DUT transmits UL-OFDMA for each trigger frame it receives. Modify the
+# transmit duty cycle by adjusting the TX time gap of the trigger frames.
+
+steps:
+  # 1. Enable RF test mode
+  - rf_test_mode:
+      enable: true
+
+  # 2. Set radio mode to 5 GHz (2x2 mode)
+  - radio_mode:
+      radio0: 1
+      radio1: 0
+
+  # 3. Set the band to 5 GHz
+  - rf_band:
+      band: ghz5
+
+  # 4. Set the bandwidth to 20 MHz
+  - channel_bandwidth:
+      bandwidth: bw20
+
+  # 5. Set the channel to 36
+  - rf_channel:
+      channel: 36
+
+  # 6. Enable trigger frame with RU index 0, data rate MCS2
+  - trigger_frame:
+      enable: true
+      standalone_hetb: trigger_based
+      frame_ctrl_type: 1
+      frame_ctrl_subtype: 2
+      frame_duration: 5484
+      ul_len: 1000
+      ltf_type: 1
+      ldpc_ess: true
+      pre_fec_pad_fct: 1
+      spatial_reuse: 65535
+      he_sig2: 511
+      aid12: 5
+      ul_coding_type: true
+      ul_mcs: 2  # MCS2 (4-bit field; NXP doc uses 0x2102 rate code but only MCS index is encoded)
+      ul_target_rssi: 90
+
+  # 7. Start TX_frame
+  - tx_frame:
+      enable: true
+      tx_rate: 0x2102  # HE SS1 MCS2
+      payload_pattern: 0xABABABAB
+      payload_length: 0x256
+      adjust_sifs_us: 20
+      bssid: [0x05, 0x43, 0x3f, 0xc4, 0x51, 0x00]
+
+  - wait_for_confirmation:
+      message: "Golden unit TX started. Press Enter to stop."
+
+  - tx_frame:
+      enable: false
