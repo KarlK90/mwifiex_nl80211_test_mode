@@ -1,0 +1,15 @@
+# This is the list of mwifiex_nl80211_test_mode authors for copyright purposes.
+#
+# This does not necessarily list everyone who has contributed code.
+# To see the full list of contributors, see the revision history in source
+# control.
+
+# Please keep the list sorted.
+
+# Individual Authors:
+# Name <email address>
+Stefan Kerkmann <s.kerkmann@pengutronix.de>
+
+# Organisations:
+# Organization <glob pattern> <fallback email address>
+Pengutronix <*@pengutronix.de> <entwicklung@pengutronix.de>
