@@ -36,6 +36,9 @@ struct Args {
     /// Can be specified multiple times. Format: --set KEY=VALUE
     #[arg(short = 's', long = "set", value_parser = parse_key_val)]
     set: Vec<(String, String)>,
+    /// Print YAML syntax reference
+    #[arg(short, long)]
+    list_commands: bool,
 }
 
 fn parse_key_val(s: &str) -> Result<(String, String), String> {
@@ -46,6 +49,10 @@ fn parse_key_val(s: &str) -> Result<(String, String), String> {
 
 fn run() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
+
+    if args.list_commands {
+        return print_yaml_syntax();
+    }
 
     let handle: Box<dyn MwifiexNetlinkInterface> = if args.dry_run {
         Box::new(MwifiexDryRunHandle {
@@ -66,6 +73,15 @@ fn run() -> Result<(), Box<dyn Error>> {
         return run_sequence_file(handle.as_ref(), path, &args.set);
     }
 
+    Ok(())
+}
+
+fn print_yaml_syntax() -> Result<(), Box<dyn Error>> {
+    println!(
+        "This is the complete supported YAML command syntax, which can also be found under examples/syntax.yaml in the source code:"
+    );
+    println!();
+    println!("{}", include_str!("../examples/syntax.yaml"));
     Ok(())
 }
 

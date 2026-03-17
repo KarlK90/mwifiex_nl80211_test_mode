@@ -4,11 +4,13 @@
 use colored::*;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, error::Error, fs::read_to_string, thread::sleep, time::Duration};
+use strum::{EnumDiscriminants, EnumIter};
 
 use crate::{command::MfgCmd, netlink::MwifiexNetlinkInterface};
 
 /// Control flow steps for command sequence files.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, EnumDiscriminants)]
+#[strum_discriminants(derive(EnumIter))]
 #[serde(rename_all = "snake_case")]
 pub enum ControlStep {
     /// Wait for the user to press Enter before continuing.
@@ -28,7 +30,8 @@ pub enum ControlStep {
 ///
 /// Each step in a command sequence is either a testmode command or a control
 /// flow operation such as waiting for user input or a timed delay.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, EnumDiscriminants)]
+#[strum_discriminants(derive(EnumIter))]
 #[serde(untagged)]
 pub enum SequenceStep {
     /// A control flow step (wait for input or delay).
@@ -139,8 +142,11 @@ fn parse_sequence_file(
 mod tests {
     use std::path::{Path, PathBuf};
 
+    use strum::{IntoDiscriminant, IntoEnumIterator};
+
     use crate::command::{
-        ActiveSubchannel, AntennaMode, ChannelBandwidth, Modulation, RfBand, TxPathId,
+        ActiveSubchannel, AntennaMode, ChannelBandwidth, MfgCmdDiscriminants, Modulation, RfBand,
+        TxPathId,
     };
 
     use super::*;
@@ -483,5 +489,46 @@ mod tests {
             let _ = parse_sequence_file(&contents, &[])
                 .unwrap_or_else(|e| panic!("failed to deserialize {path:?}: {e}"));
         });
+    }
+
+    #[test]
+    fn validate_syntax_yaml_for_completeness() {
+        let syntax_yaml_raw =
+            read_to_string("examples/syntax.yaml").expect("couldn't read syntax.yaml");
+
+        let syntax_file =
+            parse_sequence_file(&syntax_yaml_raw, &[]).expect("failed to deserialize syntax yaml");
+
+        for control in ControlStepDiscriminants::iter() {
+            if syntax_file
+                .iter()
+                .flat_map(|step| match step {
+                    SequenceStep::Control(control_step) => Some(control_step),
+                    SequenceStep::Command(_) => None,
+                })
+                .find(|candidate| candidate.discriminant() == control)
+                .is_none()
+            {
+                panic!(
+                    "incomplete syntax.yaml enum variant {control:?} is not covered, please add it to syntax.yaml"
+                );
+            }
+        }
+
+        for cmd in MfgCmdDiscriminants::iter() {
+            if syntax_file
+                .iter()
+                .flat_map(|step| match step {
+                    SequenceStep::Control(_) => None,
+                    SequenceStep::Command(cmd) => Some(cmd),
+                })
+                .find(|candidate| candidate.discriminant() == cmd)
+                .is_none()
+            {
+                panic!(
+                    "incomplete syntax.yaml enum variant {cmd:?} is not covered, please add it to syntax.yaml"
+                );
+            }
+        }
     }
 }

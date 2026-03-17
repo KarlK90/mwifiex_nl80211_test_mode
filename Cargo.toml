@@ -25,6 +25,7 @@ neli = "0.7"
 nix = { version = "0.31", features = ["net"] }
 serde = { version = "1.0", features = ["derive"] }
 serde-saphyr = "0.0.21"
+strum = { version = "0.28.0", features = ["derive"] }
 zerocopy = "0.8"
 zerocopy-derive = "0.8"
 

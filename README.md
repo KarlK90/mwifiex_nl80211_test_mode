@@ -21,6 +21,7 @@ mwifiex_test_mode [OPTIONS]
 | --------------------------------- | ------------------------------------- | ------- |
 | `-i, --interface <INTERFACE>`     | Mwifiex network interface             | `mlan0` |
 | `--interactive`                   | Launch the interactive shell          | -       |
+| `-l, --list-commands`             | Print YAML syntax reference           | -       |
 | `-f, --file <FILE>`               | Path to a YAML sequence file          | -       |
 | `-s, --set <KEY=VALUE>`           | Override a YAML variable (repeatable) | -       |
 | `-d, --dry-run`                   | Only simulate sending commands        | -       |

@@ -5,6 +5,7 @@ use std::error::Error;
 
 use clap::ValueEnum;
 use serde::{Deserialize, Serialize};
+use strum::{EnumDiscriminants, EnumIter};
 use zerocopy::FromBytes;
 
 use crate::ffi::{
@@ -350,7 +351,8 @@ impl TryFrom<u32> for SpatialStreamAllocation {
 }
 
 /// Wrapper enum for all testmode command structs.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, EnumDiscriminants)]
+#[strum_discriminants(derive(EnumIter))]
 #[serde(rename_all = "snake_case")]
 pub enum MfgCmd {
     /// Enable or disable Wi-Fi RF test mode (rf_test_mode).
