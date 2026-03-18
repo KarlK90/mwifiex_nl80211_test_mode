@@ -12,6 +12,7 @@ use mwifiex_nl80211_test_mode::interactive::run_interactive;
 use mwifiex_nl80211_test_mode::netlink::{
     MwifiexDryRunHandle, MwifiexNetlinkHandle, MwifiexNetlinkInterface,
 };
+use mwifiex_nl80211_test_mode::procfs::run_procfs_command;
 use mwifiex_nl80211_test_mode::runner::run_sequence_file;
 
 #[derive(Parser, Debug)]
@@ -39,6 +40,18 @@ struct Args {
     /// Print YAML syntax reference
     #[arg(short, long)]
     list_commands: bool,
+    /// Legacy procfs command to execute (e.g. 'rf_test_mode=1')
+    #[command(subcommand)]
+    subcommand: Option<SubCommand>,
+}
+
+#[derive(clap::Subcommand, Debug)]
+enum SubCommand {
+    /// Execute a legacy mwifiex procfs command
+    ProcfsCmd {
+        /// The procfs command string (e.g. 'rf_test_mode=1', 'channel=6')
+        command: String,
+    },
 }
 
 fn parse_key_val(s: &str) -> Result<(String, String), String> {
@@ -71,6 +84,10 @@ fn run() -> Result<(), Box<dyn Error>> {
 
     if let Some(path) = &args.file {
         return run_sequence_file(handle.as_ref(), path, &args.set);
+    }
+
+    if let Some(SubCommand::ProcfsCmd { command }) = &args.subcommand {
+        return run_procfs_command(handle.as_ref(), command);
     }
 
     Ok(())

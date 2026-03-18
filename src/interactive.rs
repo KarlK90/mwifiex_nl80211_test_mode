@@ -13,6 +13,7 @@ use crate::command::{
 };
 use crate::ffi::{CAL_DATA_LEN, MAC_ADDR_LENGTH};
 use crate::netlink::MwifiexNetlinkInterface;
+use crate::util::parse_mac_addr;
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 enum CommandChoice {
@@ -354,24 +355,6 @@ fn prompt_confirm(message: &str, default: bool) -> Result<bool, Box<dyn Error>> 
 fn prompt_mac_addr(message: &str, default: &str) -> Result<[u8; MAC_ADDR_LENGTH], Box<dyn Error>> {
     let input = Text::new(message).with_default(default).prompt()?;
     parse_mac_addr(&input)
-}
-
-fn parse_mac_addr(input: &str) -> Result<[u8; MAC_ADDR_LENGTH], Box<dyn Error>> {
-    let bytes = input
-        .split(':')
-        .map(|segment| u8::from_str_radix(segment, 16))
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|err| format!("Invalid MAC address '{input}': {err}"))?;
-
-    if bytes.len() != MAC_ADDR_LENGTH {
-        return Err(
-            format!("Invalid MAC address '{input}': expected {MAC_ADDR_LENGTH} bytes").into(),
-        );
-    }
-
-    let mut out = [0u8; MAC_ADDR_LENGTH];
-    out.copy_from_slice(&bytes);
-    Ok(out)
 }
 
 fn prompt_hex_data(message: &str, length: usize) -> Result<Vec<u8>, Box<dyn Error>> {

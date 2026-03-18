@@ -14,8 +14,14 @@ and [downstream NXP mwifiex](https://github.com/nxp-imx/mwifiex) driver.
 ## Usage
 
 ```
-mwifiex_test_mode [OPTIONS]
+mwifiex_nl_test_mode [OPTIONS] [COMMAND]
 ```
+
+|  Command   |                        Description                        |
+| ---------- | --------------------------------------------------------- |
+| procfs-cmd | Execute a legacy mwifiex procfs command                   |
+| help       | Print this message or the help of the given subcommand(s) |
+
 
 | Flag                              | Description                           | Default |
 | --------------------------------- | ------------------------------------- | ------- |
@@ -30,12 +36,14 @@ mwifiex_test_mode [OPTIONS]
 
 ## Modes of operation
 
-There are two modes of operation which have different goals in mind:
+There are three modes of operation which have different goals in mind:
 
 1. Select and run commands inside an interactive shell:
     * Quick exploration and prototyping of command sequences
 2. Execute a command sequence defined in YAML files:
     * Repeatable test sequences for usage during development and certification
+3. Execute a command in procfs compatibility mode:
+    * Useful to migrate existing integrations and shell scripts
 
 **Interactive shell** - select and configure commands from a menu:
 
@@ -70,6 +78,29 @@ of an optional `variables` block (overridable via `--set`) and a required
 examples from [AN14114: RF Test Mode on
 LinuxOS](https://docs.nxp.com/bundle/AN14114/page/topics/wi-fi_rf_test_mode.html)
 ported to YAML as well.
+
+## procfs command interface compatibility
+
+For backwards compatibility with existing scripts and workflows that use the
+mwifiex procfs interface, the `procfs-cmd` sub command accepts the same command
+strings that were previously written to `/proc/mwifiex/<adapter>/config`:
+
+```sh
+mwifiex_nl_test_mode procfs-cmd "rf_test_mode=1"
+mwifiex_nl_test_mode procfs-cmd "channel=6"
+mwifiex_nl_test_mode procfs-cmd "tx_continuous=1 0 0 0 0 7"
+mwifiex_nl_test_mode procfs-cmd get_and_reset_per
+```
+
+All procfs commands documented in
+[AN14114](https://docs.nxp.com/bundle/AN14114/page/topics/list_of_commands_for_wi_fi_rf_test_mode.html)
+are supported.
+
+> **Recommendation:** The procfs interface is provided as a migration aid.
+> New test sequences should use the YAML format instead, which offers named
+> parameters, variables, control flow steps, and better readability. See the
+> [YAML command sequence syntax](#yaml-command-sequence-syntax) section and the
+> [examples/](examples/) directory to get started.
 
 ## Kernel NL80211 test mode support
 
