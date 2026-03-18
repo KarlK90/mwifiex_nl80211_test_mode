@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, error::Error, fs::read_to_string, thread::sleep, time::Duration};
 use strum::{EnumDiscriminants, EnumIter};
 
-use crate::{command::MfgCmd, netlink::MwifiexNetlinkInterface};
+use crate::{command::MfgCmd, netlink::MwifiexNetlinkInterface, util::format_request_response};
 
 /// Control flow steps for command sequence files.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, EnumDiscriminants)]
@@ -56,7 +56,10 @@ pub fn run_sequence_file(
             SequenceStep::Command(cmd) => {
                 match handle.send_mfg_cmd(cmd) {
                     Ok(response) => {
-                        println!("{}", format!("{idx}: {cmd:#?} => {response:#?}").green());
+                        println!(
+                            "{idx}:\n{}",
+                            format_request_response(cmd, &response).green()
+                        );
                     }
                     Err(err) => {
                         println!("{}", format!("{idx}: Error: {cmd:#?} => {err}").red());
@@ -72,7 +75,7 @@ pub fn run_sequence_file(
                 };
                 // mwifiex driver/card needs time to process the command. Sleep for a little while
                 // otherwise subsequent commands will fail if sent to fast.
-                std::thread::sleep(Duration::from_millis(500));
+                sleep(Duration::from_millis(500));
             }
             SequenceStep::Control(ControlStep::WaitForConfirmation { message }) => {
                 println!(
@@ -500,14 +503,13 @@ mod tests {
             parse_sequence_file(&syntax_yaml_raw, &[]).expect("failed to deserialize syntax yaml");
 
         for control in ControlStepDiscriminants::iter() {
-            if syntax_file
+            if !syntax_file
                 .iter()
                 .flat_map(|step| match step {
                     SequenceStep::Control(control_step) => Some(control_step),
                     SequenceStep::Command(_) => None,
                 })
-                .find(|candidate| candidate.discriminant() == control)
-                .is_none()
+                .any(|candidate| candidate.discriminant() == control)
             {
                 panic!(
                     "incomplete syntax.yaml enum variant {control:?} is not covered, please add it to syntax.yaml"
@@ -516,14 +518,13 @@ mod tests {
         }
 
         for cmd in MfgCmdDiscriminants::iter() {
-            if syntax_file
+            if !syntax_file
                 .iter()
                 .flat_map(|step| match step {
                     SequenceStep::Control(_) => None,
                     SequenceStep::Command(cmd) => Some(cmd),
                 })
-                .find(|candidate| candidate.discriminant() == cmd)
-                .is_none()
+                .any(|candidate| candidate.discriminant() == cmd)
             {
                 panic!(
                     "incomplete syntax.yaml enum variant {cmd:?} is not covered, please add it to syntax.yaml"

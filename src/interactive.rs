@@ -13,7 +13,7 @@ use crate::command::{
 };
 use crate::ffi::{CAL_DATA_LEN, MAC_ADDR_LENGTH};
 use crate::netlink::MwifiexNetlinkInterface;
-use crate::util::parse_mac_addr;
+use crate::util::{format_request_response, parse_mac_addr};
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 enum CommandChoice {
@@ -171,7 +171,7 @@ pub fn run_interactive(handle: &dyn MwifiexNetlinkInterface) -> Result<(), Box<d
 
         let cmd = choice.try_into()?;
         match handle.send_mfg_cmd(&cmd) {
-            Ok(resp) => println!("Sent command {cmd:?} => Response: {resp:?}"),
+            Ok(resp) => println!("{}", format_request_response(&cmd, &resp)),
             Err(err) => println!("Failed to send command: {err}"),
         }
 
