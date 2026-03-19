@@ -411,13 +411,13 @@ pub enum MfgCmd {
     /// Source: AN14114 "Get and reset the packet error rate".
     GetAndResetPer {
         /// Total RX unicast/multicast/broadcast packet count
-        #[serde(skip)]
+        #[serde(skip_deserializing)]
         rx_total_packet_count: u32,
         /// RX multicast/broadcast packet count
-        #[serde(skip)]
+        #[serde(skip_deserializing)]
         rx_multi_broadcast_packet_count: u32,
         /// RX FCS error count
-        #[serde(skip)]
+        #[serde(skip_deserializing)]
         rx_frame_check_sequence_errors: u32,
     },
     /// Configure transmit power (tx_power).

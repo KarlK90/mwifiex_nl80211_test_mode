@@ -169,11 +169,10 @@ pub fn run_interactive(handle: &dyn MwifiexNetlinkInterface) -> Result<(), Box<d
             Err(err) => return Err(err.into()),
         };
 
-        let cmd = choice.try_into()?;
-        match handle.send_mfg_cmd(&cmd) {
-            Ok(resp) => println!("{}", format_request_response(&cmd, &resp)),
-            Err(err) => println!("Failed to send command: {err}"),
-        }
+        let request = choice.try_into()?;
+        let response = handle.send_mfg_cmd(&request);
+
+        println!("{}", format_request_response(&request, &response));
 
         if !prompt_confirm("Send another command?", true)? {
             break;

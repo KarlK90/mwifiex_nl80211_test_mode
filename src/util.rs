@@ -3,6 +3,8 @@
 
 use std::{cmp::max, error::Error};
 
+use colored::{ColoredString, Colorize};
+
 use crate::{command::MfgCmd, ffi::MAC_ADDR_LENGTH};
 
 pub fn parse_mac_addr(input: &str) -> Result<[u8; MAC_ADDR_LENGTH], Box<dyn Error>> {
@@ -23,31 +25,44 @@ pub fn parse_mac_addr(input: &str) -> Result<[u8; MAC_ADDR_LENGTH], Box<dyn Erro
         .map_err(|_| "failed to construct MAC address".to_string().into())
 }
 
-pub fn format_request_response(request: &MfgCmd, response: &MfgCmd) -> String {
-    let request = format!("{request:#?}");
-    let response = format!("{response:#?}");
+pub fn format_request_response(
+    request: &MfgCmd,
+    response: &Result<MfgCmd, Box<dyn Error>>,
+) -> ColoredString {
+    let req = serde_saphyr::to_string(request).unwrap_or_else(|_| format!("{request:#?}"));
 
-    let longest_line = request
+    let resp = match response {
+        Ok(response) => {
+            serde_saphyr::to_string(response).unwrap_or_else(|_| format!("{response:#?}"))
+        }
+        Err(err) => format!("{err}"),
+    };
+
+    let longest_line = req
         .lines()
-        .zip(response.lines())
+        .zip(resp.lines())
         .fold(0, |longest_line, (req, resp)| {
             max(max(req.len(), resp.len()), longest_line)
         });
 
-    let lines = max(request.lines().count(), response.lines().count());
-
-    request.lines().zip(response.lines()).enumerate().fold(
+    let formatted = req.lines().zip(resp.lines()).enumerate().fold(
         String::new(),
         |mut result, (idx, (req, resp))| {
             result.push_str(&format!(
                 "{:width$}  {}  {:width$}\n",
                 req,
-                if idx == lines / 2 { "=>" } else { "  " },
+                if idx == 0 { "=>" } else { "  " },
                 resp,
                 width = longest_line,
             ));
 
             result
         },
-    )
+    );
+
+    if response.is_err() {
+        formatted.red()
+    } else {
+        formatted.green()
+    }
 }

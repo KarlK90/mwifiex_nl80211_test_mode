@@ -16,10 +16,12 @@ pub fn run_procfs_command(
     handle: &dyn MwifiexNetlinkInterface,
     input: &str,
 ) -> Result<(), Box<dyn Error>> {
-    let cmd = parse_procfs_command(input)?;
-    let response = handle.send_mfg_cmd(&cmd)?;
+    let request = parse_procfs_command(input)?;
+    let response = handle.send_mfg_cmd(&request);
 
-    println!("{}", format_request_response(&cmd, &response));
+    println!("{}", format_request_response(&request, &response));
+
+    let _ = response?;
 
     Ok(())
 }

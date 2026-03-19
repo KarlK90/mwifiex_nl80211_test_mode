@@ -53,26 +53,20 @@ pub fn run_sequence_file(
     println!("Sending:");
     for (idx, step) in steps.iter().enumerate() {
         match step {
-            SequenceStep::Command(cmd) => {
-                match handle.send_mfg_cmd(cmd) {
-                    Ok(response) => {
-                        println!(
-                            "{idx}:\n{}",
-                            format_request_response(cmd, &response).green()
-                        );
-                    }
-                    Err(err) => {
-                        println!("{}", format!("{idx}: Error: {cmd:#?} => {err}").red());
+            SequenceStep::Command(request) => {
+                let response = handle.send_mfg_cmd(request);
 
-                        if inquire::Confirm::new("Continue?")
-                            .with_default(false)
-                            .prompt()
-                            .is_ok_and(|c| !c)
-                        {
-                            break;
-                        }
-                    }
-                };
+                println!("{idx}:\n{}", format_request_response(request, &response));
+
+                if response.is_err()
+                    && inquire::Confirm::new("Continue?")
+                        .with_default(false)
+                        .prompt()
+                        .is_ok_and(|c| !c)
+                {
+                    break;
+                }
+
                 // mwifiex driver/card needs time to process the command. Sleep for a little while
                 // otherwise subsequent commands will fail if sent to fast.
                 sleep(Duration::from_millis(500));
