@@ -102,6 +102,44 @@ are supported.
 > [YAML command sequence syntax](#yaml-command-sequence-syntax) section and the
 > [examples/](examples/) directory to get started.
 
+## Test isolation
+
+For RF testing, it is recommended to isolate the network device in a separate
+network namespace so that only `mwifiex_nl_test_mode` interacts with the
+device from user space:
+
+```sh
+ip netns add mwifiex                        # Create network namespace
+iw dev                                      # Find the correct phy
+iw phy phy0 set netns name mwifiex          # Move phy to network namespace
+ip netns exec mwifiex mwifiex_nl_test_mode  # Execute test cases
+ip netns delete mwifiex                     # Remove network namespace when done
+```
+
+## Known limitations
+
+* No big endian support
+* No auto-detection of the card type - must be supplied via CLI argument
+
+### Failed firmware commands when test mode is active
+
+If the wireless card is operating in RF test mode it will respond with errors
+to regular commands. This can be observed if `mwifiex_nl_test_mode` establishes
+its netlink socket and asks for the wiphy and wdev number of the interface:
+
+```sh
+root@machine:/ mwifiex_nl_test_mode
+[ 2440.139874] mwifiex_sdio mmc1:0001:1: CMD_RESP: cmd 0x1e error, result=0x6
+```
+
+This is a known limitation of the mwifiex drivers, both mainline and downstream.
+The root cause is that the netlink message handler for
+[`NL80211_CMD_GET_INTERFACE`](https://github.com/torvalds/linux/blob/v6.19/net/wireless/nl80211.c#L18177-L18184)
+eventually calls
+[mwifiex->ops->get_tx_power](https://github.com/torvalds/linux/blob/v6.19/net/wireless/nl80211.c#L4233)
+handler, which requests the current transmit power and fails. The error
+message isn't nice but is harmless.
+
 ## Kernel NL80211 test mode support
 
 The tool communicates with the mwifiex driver via the NL80211 test mode
@@ -157,10 +195,6 @@ Default target architectures:
 
 Build artifacts are placed in `target/<arch>/<profile>/` directories.
 
-## Known limitations
-
-* No big endian support
-* No auto-detection of the card type - must be supplied via CLI argument
 
 ## License
 
